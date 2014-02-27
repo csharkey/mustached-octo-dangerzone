@@ -7,6 +7,7 @@ module WeblogStats
     DATE_FMT = '[%d/%b/%Y:%H:%M:%S %Z]'
     SECONDS_IN_DAY = 24 * 3600
     TOP_N = 10
+    FREQ_MAPS = %w{requestors paths browsers crawlers responses}
 
     class LogStats
 
@@ -57,7 +58,7 @@ module WeblogStats
             @unparsed     = []
             @num_requests = 0
 
-            %w{requestors paths browsers crawlers responses}.each { |key|
+            FREQ_MAPS.each { |key|
                 instance_variable_set('@' + key, Hash.new(0))
             }
         end
@@ -65,7 +66,7 @@ module WeblogStats
         def generate_statistics(n=TOP_N)
             @stats = {}
 
-            %w{requestors paths browsers crawlers responses}.each { |key|
+            FREQ_MAPS.each { |key|
                 sorted = instance_variable_get('@' + key).sort_by { |k,v| v }
                 sorted = sorted[-n..-1] if n && sorted.size > n
                 @stats[key] = sorted.reverse
@@ -84,16 +85,16 @@ module WeblogStats
         end
 
         def pretty_print(stats=@stats)
-            stats.each { |header, data|
-                if data.is_a? Array
-                    puts header
-                    puts
-                    data.each { |k,v|
-                        puts "%20d  %s" % [v, k]
-                    }
-                else
-                    puts "\n%20s  %s\n" % [data, header]
-                end
+            puts 'general'
+            (stats.keys - FREQ_MAPS).each { |header|
+                puts "%20s  %s" % [stats[header], header]
+            }
+            FREQ_MAPS.each { |header|
+                puts header
+                puts
+                stats[header].each { |k,v|
+                    puts "%20d  %s" % [v, k]
+                }
             }
         end
     end

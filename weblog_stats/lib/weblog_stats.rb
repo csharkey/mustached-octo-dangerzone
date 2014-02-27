@@ -11,6 +11,8 @@ module WeblogStats
 
     class LogStats
 
+        # @param format [String] same format as Apache mod_log_config
+        #
         def initialize(format=LOG_FMT)
             @format       = format
             @stats        = {}
@@ -21,6 +23,8 @@ module WeblogStats
             @ua_cache   = Hash.new { |h,k| h[k] = @ua_parser.parse(k) }
         end
 
+        # @param parsed [Hash] as per ApacheLogRegex#parse
+        #
         def update_statistics(parsed)
             @num_requests += 1
             ts = DateTime.strptime(parsed['%t'], DATE_FMT)
@@ -39,6 +43,8 @@ module WeblogStats
             end
         end
 
+        # @param parsed [String] single line from Apache log
+        #
         def analyze_line(line)
             parsed = @log_parser.parse(line)
             if ! parsed
@@ -48,6 +54,8 @@ module WeblogStats
             update_statistics(parsed)
         end
 
+        # @param fd [File] stream to parse
+        #
         def analyze_fd(fd)
             fd.each { |line|
                 analyze_line(line)
@@ -63,12 +71,15 @@ module WeblogStats
             }
         end
 
+        # @param n [Integer,nil] Truncate stats to top N if non-nil
+        # @return [Hash] each key represents a stat
+        #
         def generate_statistics(n=TOP_N)
             @stats = {}
 
             FREQ_MAPS.each { |key|
                 sorted = instance_variable_get('@' + key).sort_by { |k,v| v }
-                sorted = sorted[-n..-1] if n && sorted.size > n
+                sorted = sorted[-n..-1] if n && n > 0 && sorted.size > n
                 @stats[key] = sorted.reverse
             }
 
@@ -84,6 +95,8 @@ module WeblogStats
             return @stats
         end
 
+        # @param stats [Hash] stats to display as returned by #generate_statistics
+        #
         def pretty_print(stats=@stats)
             puts 'general'
             (stats.keys - FREQ_MAPS).each { |header|

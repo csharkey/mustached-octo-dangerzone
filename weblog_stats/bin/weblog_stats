@@ -9,12 +9,12 @@ Analyze given weblogs, or STDIN if unspecified.
 
 Usage:
   #{SCRIPT} -m [options]
-  #{SCRIPT} [options] [-] [FILENAMES...]
+  #{SCRIPT} [options] [FILENAMES...]
 
 Options:
   -h --help                show this help message and exit
   -m, --monitor            read stdin forever, refresh stats every INTERVAL
-  -n, --number N           show top N statistics [default: 5]
+  -n, --number N           show top N statistics, use 0 for all [default: 5]
   -i, --interval INTERVAL  refresh display every INTERVAL seconds [default: 3]
   -c, --cumulative         use cumulative statistics for monitor mode
 
@@ -76,6 +76,7 @@ def main
     if $opts['--monitor']
         monitor
     else
+        ARGV.replace($opts['FILENAMES']) # for ARGF
         $logstat.analyze_fd(ARGF)
         $logstat.generate_statistics($top_n)
         $logstat.pretty_print

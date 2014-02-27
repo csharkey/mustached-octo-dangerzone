@@ -3,25 +3,24 @@
 require 'docopt'
 require 'weblog_stats'
 
+SCRIPT = File.basename(__FILE__)
 USAGE = <<DOCOPT
 Analyze given weblogs, or STDIN if unspecified.
 
 Usage:
-  #{__FILE__} monitor [options]
-  #{__FILE__} [options] FILENAMES...
+  #{SCRIPT} -m [options]
+  #{SCRIPT} [options] [-] [FILENAMES...]
 
 Options:
   -h --help                show this help message and exit
+  -m, --monitor            read stdin forever, refresh stats every INTERVAL
   -n, --number N           show top N statistics [default: 5]
   -i, --interval INTERVAL  refresh display every INTERVAL seconds [default: 3]
   -c, --cumulative         use cumulative statistics for monitor mode
 
-Commands:
-  monitor                  read stdin forever, refresh stats every INTERVAL
-
 To constantly monitor a file:
 
-tail -f log | #{__FILE__} monitor
+tail -f log | #{SCRIPT} -m
 DOCOPT
 
 BUFFER_SIZE = 4096
@@ -74,15 +73,13 @@ def main
     parse_options
     $logstat  = WeblogStats::LogStats.new
 
-    if $opts['monitor']
+    if $opts['--monitor']
         monitor
     else
-        $opts['FILENAMES'].each { |filename|
-            $logstat.analyze_fd(open(filename))
-        }
+        $logstat.analyze_fd(ARGF)
         $logstat.generate_statistics($top_n)
         $logstat.pretty_print
     end
 end
 
-main() if __FILE__ == $0
+main

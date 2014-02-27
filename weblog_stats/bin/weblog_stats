@@ -1,0 +1,88 @@
+#!/usr/bin/env ruby
+
+require 'docopt'
+require 'weblog_stats'
+
+USAGE = <<DOCOPT
+Analyze given weblogs, or STDIN if unspecified.
+
+Usage:
+  #{__FILE__} monitor [options]
+  #{__FILE__} [options] FILENAMES...
+
+Options:
+  -h --help                show this help message and exit
+  -n, --number N           show top N statistics [default: 5]
+  -i, --interval INTERVAL  refresh display every INTERVAL seconds [default: 3]
+  -c, --cumulative         use cumulative statistics for monitor mode
+
+Commands:
+  monitor                  read stdin forever, refresh stats every INTERVAL
+
+To constantly monitor a file:
+
+tail -f log | #{__FILE__} monitor
+DOCOPT
+
+BUFFER_SIZE = 4096
+
+def parse_options
+    begin
+        $opts = Docopt::docopt(USAGE)
+    rescue Docopt::Exit => e
+        STDERR.write(e.message)
+        STDERR.write("\n")
+        exit 1
+    end
+    $interval = $opts['--interval'].to_i
+    $top_n    = $opts['--number'].to_i
+end
+
+def monitor
+    elapsed = 0
+    buffer = nil
+    loop do
+        before = Time.now
+        read_a, write_a, error_a = Kernel.select([STDIN], nil, nil, $interval)
+        after = Time.now
+        elapsed += after - before
+
+        if ! read_a.nil?
+            input = read_a[0].read_nonblock(BUFFER_SIZE)
+            if buffer
+                input = buffer + input
+                buffer = nil
+            end
+            lines = input.split("\n")
+            buffer = lines.pop if input[-1] != "\n"
+            lines.each { |line|
+                $logstat.analyze_line(line)
+            }
+        end
+        if elapsed >= $interval
+            elapsed = 0
+            puts "\e[H\e[2J"
+            puts "#{after} interval: #{$interval}s\n"
+            stats = $logstat.generate_statistics($top_n)
+            $logstat.pretty_print
+            $logstat.reset_statistics unless $opts['--cumulative']
+        end
+    end
+end
+
+def main
+    parse_options
+    $logstat  = WeblogStats::LogStats.new
+
+    if $opts['monitor']
+        monitor
+    else
+        $opts['FILENAMES'].each { |filename|
+            $logstat.analyze_fd(open(filename))
+        }
+        $logstat.generate_statistics($top_n)
+        $logstat.pretty_print
+    end
+end
+
+main() if __FILE__ == $0

@@ -1,0 +1,89 @@
+---
+requestors:
+- - 127.0.0.1
+  - 86
+- - 72.29.64.13
+  - 57
+- - 166.78.3.27
+  - 14
+- - 95.108.240.250
+  - 14
+- - 198.101.228.229
+  - 14
+- - 180.180.78.154
+  - 10
+- - 208.90.57.196
+  - 10
+- - 180.180.64.32
+  - 9
+- - 201.216.232.68
+  - 8
+- - 79.143.190.173
+  - 8
+paths:
+- - /access.log
+  - 323
+- - /
+  - 125
+- - /wp-login.php?action=register
+  - 102
+- - /wp-login.php
+  - 95
+- - '*'
+  - 86
+- - /robots.txt
+  - 48
+- - 
+  - 48
+- - /favicon.ico
+  - 7
+- - /icons/blank.gif
+  - 7
+- - /error.log
+  - 6
+browsers:
+- - IE
+  - 586
+- - Other
+  - 150
+- - Firefox
+  - 56
+- - Chrome
+  - 23
+- - Opera
+  - 8
+- - Android
+  - 7
+- - Mobile Safari
+  - 2
+- - BingPreview
+  - 1
+crawlers:
+- - Other
+  - 108
+- - Googlebot
+  - 25
+- - bingbot
+  - 19
+- - YandexBot
+  - 12
+- - Mobile Safari
+  - 2
+- - UP.Browser
+  - 1
+responses:
+- - '200'
+  - 581
+- - '404'
+  - 365
+- - '408'
+  - 38
+- - '501'
+  - 9
+- - '400'
+  - 4
+- - '304'
+  - 3
+:unparsed: 0
+:total_requests: 1000
+:mean_requests_per_sec: 0.0097
